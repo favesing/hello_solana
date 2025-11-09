@@ -1,0 +1,23 @@
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+anchor_favorites = "AfWzQDmP7gzMaiFPmwwQysvVTEuxPvKtDcUA5hfTwiwW"
+bank = "3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m"
+emit_log = "GmLHkec7uKSM1ahLZvR7aiUvyzXxVTb8gZbaqdHj3kSH"
+tokenbank = "DScDzC7XWcpLGyq2CMu8sPLfqE4Z1MDUqQRvieEYHZBa"
+
+# IDL 注册
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "pnpx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
