@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/emit_log.json`.
  */
 export type EmitLog = {
-  "address": "GmLHkec7uKSM1ahLZvR7aiUvyzXxVTb8gZbaqdHj3kSH",
+  "address": "GX5K5zq1uUNJX41HepVRhGJUc6qdc2ZSGnLqaEt2ojhj",
   "metadata": {
     "name": "emitLog",
     "version": "0.1.0",

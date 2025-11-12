@@ -11,7 +11,7 @@ import favoritesIdl from "./idl/favorites.json";
 import { Favorites } from "./types/favorites";
 
 // Favorites 合约程序 ID
-const FAVORITES_PROGRAM_ID = new PublicKey("AfWzQDmP7gzMaiFPmwwQysvVTEuxPvKtDcUA5hfTwiwW");
+const FAVORITES_PROGRAM_ID = new PublicKey("7Hb3pe31LGvmArju3V8yMe9afNVJDY4SV6ceMSZU3iET");
 const RPC_ENDPOINT = "http://localhost:8899";
 
 // 定义 Favorites 账户数据结构

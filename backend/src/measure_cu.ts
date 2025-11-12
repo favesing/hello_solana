@@ -6,6 +6,7 @@ import {
   Transaction,
   ComputeBudgetProgram,
   PublicKey,
+  VersionedTransaction,
 } from "@solana/web3.js";
 import { Program, BN, AnchorProvider, setProvider } from "@coral-xyz/anchor";
 import idl from "./idl/favorites.json";
@@ -28,7 +29,8 @@ class ComputeUnitMeasurer {
   // 📊 测量交易的 CU 消耗
   async measureTransaction(
     name: string,
-    buildTransaction: () => Promise<Transaction>
+    buildTransaction: () => Promise<Transaction>,
+    signers?:Keypair[]
   ): Promise<number> {
     try {
       console.log(`\n🔍 测量 ${name} 的 CU 消耗...`);
@@ -45,8 +47,10 @@ class ComputeUnitMeasurer {
       tx.recentBlockhash = (await this.connection.getLatestBlockhash()).blockhash;
       
       // 模拟交易
-      const simulation = await this.connection.simulateTransaction(tx, [this.payer]);
-      
+      const simulation = await this.connection.simulateTransaction(tx, [this.payer, ...signers||[]]);
+      // const simulation = await this.connection.simulateTransaction(
+      //   new VersionedTransaction(tx.compileMessage(), [this.payer.secretKey])
+      // )
       if (simulation.value.err) {
         console.log(`❌ ${name} 模拟失败:`, simulation.value.err);
         return -1;
@@ -81,8 +85,8 @@ class ComputeUnitMeasurer {
     });
 
     // 2. 创建账户
+    const newAccount = Keypair.generate();
     results["创建账户"] = await this.measureTransaction("创建账户", async () => {
-      const newAccount = Keypair.generate();
       return new Transaction().add(
         SystemProgram.createAccount({
           fromPubkey: this.payer.publicKey,
@@ -92,7 +96,7 @@ class ComputeUnitMeasurer {
           programId: SystemProgram.programId,
         })
       );
-    });
+    }, [newAccount]);
 
     // 3. Favorites 合约调用
     results["Favorites合约"] = await this.measureTransaction("Favorites合约", async () => {
@@ -160,6 +164,7 @@ class ComputeUnitMeasurer {
     console.log("📊 CU 消耗测量结果摘要");
     console.log("=".repeat(50));
     
+    console.log("\n💡 测量的 CU 限制设置:");
     Object.entries(results).forEach(([name, cu]) => {
       if (cu >= 0) {
         console.log(`${name.padEnd(20)}: ${cu.toLocaleString()} CU`);

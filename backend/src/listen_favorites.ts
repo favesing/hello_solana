@@ -86,27 +86,27 @@ async function listenToFavorites() {
     
   // 监听账户变化（可选， 这里监听最后一个）
   console.log("监听最后一个 Favorites 账户变化...");
-    const lastAccount = accounts[accounts.length - 1];
-    connection.onAccountChange(
-        lastAccount.publicKey,
-        (accountInfo, context) => {
-          console.log(`📝 账户更新: ${lastAccount.publicKey.toBase58()}`);
-          console.log(`📊 Slot: ${context.slot}`);
-          
-          // 尝试解析账户数据
-          try {
-            const decoded = program.coder.accounts.decode("favorites", accountInfo.data);
-            console.log(`📈 新数据:`);
-            console.log(`   Number: ${decoded.number.toString()}`);
-            console.log(`   Color: ${decoded.color}`);
-          } catch (error) {
-            console.log("❌ 无法解析账户数据:", error);
-          }
-          
-          console.log("🔄".repeat(20) + "\n");
-        },
-        { commitment: "confirmed" }
-      );
+  const lastAccount = accounts[accounts.length - 1];
+  connection.onAccountChange(
+      lastAccount.publicKey,
+      (accountInfo, context) => {
+        console.log(`📝 账户更新: ${lastAccount.publicKey.toBase58()}`);
+        console.log(`📊 Slot: ${context.slot}`);
+        
+        // 尝试解析账户数据
+        try {
+          const decoded = program.coder.accounts.decode("favorites", accountInfo.data);
+          console.log(`📈 新数据:`);
+          console.log(`   Number: ${decoded.number.toString()}`);
+          console.log(`   Color: ${decoded.color}`);
+        } catch (error) {
+          console.log("❌ 无法解析账户数据:", error);
+        }
+        
+        console.log("🔄".repeat(20) + "\n");
+      },
+      { commitment: "confirmed" }
+    );
   } catch (error) {
     console.log("⚠️  获取现有账户失败（可能是第一次运行）:", error);
   }

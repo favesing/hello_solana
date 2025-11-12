@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/bank.json`.
  */
 export type Bank = {
-  "address": "3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m",
+  "address": "2N8wiE4EexdXScQysGMxeYbTkPooaXmu6DbhxNZ2YvSL",
   "metadata": {
     "name": "bank",
     "version": "0.1.0",

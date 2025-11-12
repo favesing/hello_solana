@@ -254,7 +254,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "anchor_curd"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
+
+[[package]]
 name = "anchor_favorites"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
+
+[[package]]
+name = "anchor_start"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",

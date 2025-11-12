@@ -7,7 +7,7 @@ use anchor_lang::system_program::{transfer, Transfer};
 // 生成方法：
 // 1. 在命令行运行：`solana-keygen new --no-outfile`
 // 2. 然后运行：`solana address`
-declare_id!("E2Ht5YytrL863sL8VvQ4WrZ7VLP8Dd57jrFpyeML2GQ2"); // 示例 ID，请替换
+declare_id!("BUARQpj5Xhra4qUF6GN2f9SF2ah6hhP71in4WEeDfgsq"); // 示例 ID，请替换
 
 #[program]
 pub mod anchor_curd {

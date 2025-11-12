@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/tokenbank.json`.
  */
 export type Tokenbank = {
-  "address": "DScDzC7XWcpLGyq2CMu8sPLfqE4Z1MDUqQRvieEYHZBa",
+  "address": "FYbkwegkQEoPsAdPqbbe4Dqhvbkc5eg82dTW5ioz1EA9",
   "metadata": {
     "name": "tokenbank",
     "version": "0.1.0",
@@ -116,7 +116,20 @@ export type Tokenbank = {
       "accounts": [
         {
           "name": "bank",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  110,
+                  107
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "userAccount",

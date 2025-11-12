@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "listen_favorites": "ts-node src/listen_favorites.ts",
-    
     "measure_cu": "ts-node src/measure_cu.ts",
     "scan_bank": "ts-node src/scan_bank_v2.ts",
     "get_all_favorites_pdas": "ts-node src/get_all_favorites_pdas.ts",
@@ -27,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bs58": "^5.0.0",
+    "@types/node": "^24.10.0",
     "bs58": "^6.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"

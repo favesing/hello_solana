@@ -6,12 +6,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-anchor_favorites = "AfWzQDmP7gzMaiFPmwwQysvVTEuxPvKtDcUA5hfTwiwW"
-bank = "3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m"
-emit_log = "GmLHkec7uKSM1ahLZvR7aiUvyzXxVTb8gZbaqdHj3kSH"
-tokenbank = "DScDzC7XWcpLGyq2CMu8sPLfqE4Z1MDUqQRvieEYHZBa"
+anchor_curd = "BUARQpj5Xhra4qUF6GN2f9SF2ah6hhP71in4WEeDfgsq"
+anchor_favorites = "7Hb3pe31LGvmArju3V8yMe9afNVJDY4SV6ceMSZU3iET"
+anchor_start = "4kdad4rUQpwUPgHzGWDtBesba3BCaijfiTEZHZAv5HUo"
+bank = "2N8wiE4EexdXScQysGMxeYbTkPooaXmu6DbhxNZ2YvSL"
+emit_log = "GX5K5zq1uUNJX41HepVRhGJUc6qdc2ZSGnLqaEt2ojhj"
+tokenbank = "FYbkwegkQEoPsAdPqbbe4Dqhvbkc5eg82dTW5ioz1EA9"
 
-# IDL 注册
 [registry]
 url = "https://api.apr.dev"
 

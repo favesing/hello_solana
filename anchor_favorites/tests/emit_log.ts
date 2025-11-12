@@ -1,12 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { expect } from "chai";
+import { EmitLog } from "../target/types/emit_log";
 
 // 这里可以根据实际生成的类型替换 any
 // .only 只运行这个测试用例
 describe.only("emit_log", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
-    const program = anchor.workspace.EmitLog as Program<any>;
+    const program = anchor.workspace.emitLog as Program<EmitLog>;
 
     it("emit_log!", async () => {
         // 调用 initialize 方法

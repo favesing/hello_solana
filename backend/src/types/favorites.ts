@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/favorites.json`.
  */
 export type Favorites = {
-  "address": "AfWzQDmP7gzMaiFPmwwQysvVTEuxPvKtDcUA5hfTwiwW",
+  "address": "7Hb3pe31LGvmArju3V8yMe9afNVJDY4SV6ceMSZU3iET",
   "metadata": {
     "name": "favorites",
     "version": "0.1.0",

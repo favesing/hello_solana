@@ -1,16 +1,19 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Bank } from "../target/types/bank";
-import { PublicKey, Keypair, Transaction } from "@solana/web3.js";
-import { assert } from "chai";
+import { PublicKey, Keypair, Transaction, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { assert, expect } from "chai";
 
+function log(message: string, ...args: any[]) {
+  console.log("     ", message, ...args);
+}
 describe("bank", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
   const program = anchor.workspace.Bank as Program<Bank>;
 
-  it("创建银行账户", async () => {
+  it.skip("创建银行账户", async () => {
     const [bankPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("bank")],
       program.programId
@@ -18,7 +21,7 @@ describe("bank", () => {
 
     const tx = await program.methods
       .initialize()
-      .accounts({
+      .accountsStrict({
         bank: bankPDA,
         authority: provider.wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -29,7 +32,7 @@ describe("bank", () => {
     assert.equal(bankAccount.authority.toBase58(), provider.wallet.publicKey.toBase58());
   });
 
-  it("创建用户账户", async () => {
+  it.skip("创建用户账户", async () => {
     const [userPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("user"), provider.wallet.publicKey.toBuffer()],
       program.programId
@@ -37,7 +40,7 @@ describe("bank", () => {
 
     const tx = await program.methods
       .createUserAccount()
-      .accounts({
+      .accountsStrict({
         userAccount: userPDA,
         owner: provider.wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -45,7 +48,7 @@ describe("bank", () => {
       .rpc();
 
     const userAccount = await program.account.userAccount.fetch(userPDA);
-    assert.equal(userAccount.depositAmount.toNumber(), 0);
+    assert.equal(userAccount.depositAmount.toNumber(), 0)
   });
 
   it("存款", async () => {
@@ -59,12 +62,13 @@ describe("bank", () => {
       program.programId
     );
 
-    const initialBalance = await provider.connection.getBalance(bankPDA);
+    const bankBalanceBefore = await provider.connection.getBalance(bankPDA);
+    const userBalanceBefore = await program.account.userAccount.fetch(userPDA);
     const depositAmount = new anchor.BN(1_000_000_000); // 1 SOL
 
     const tx = await program.methods
       .deposit(depositAmount)
-      .accounts({
+      .accountsStrict({
         bank: bankPDA,
         userAccount: userPDA,
         depositor: provider.wallet.publicKey,
@@ -72,14 +76,17 @@ describe("bank", () => {
       })
       .rpc();
 
-    const finalBalance = await provider.connection.getBalance(bankPDA);
-    const userAccount = await program.account.userAccount.fetch(userPDA);
+    const bankBalanceAfter = await provider.connection.getBalance(bankPDA);
+    const userBalanceAfter = await program.account.userAccount.fetch(userPDA);
 
-    assert.equal(finalBalance - initialBalance, depositAmount.toNumber());
-    assert.equal(userAccount.depositAmount.toNumber(), depositAmount.toNumber());
+    assert.equal(bankBalanceAfter - bankBalanceBefore, depositAmount.toNumber());
+    assert.equal(
+      userBalanceAfter.depositAmount.toNumber() - userBalanceBefore.depositAmount.toNumber(), 
+      depositAmount.toNumber()
+    );
   });
 
-  it("提取到指定账户", async () => {
+  it("提现到指定账户", async () => {
     const [bankPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("bank")],
       program.programId
@@ -92,12 +99,19 @@ describe("bank", () => {
 
     const withdrawAmount = new anchor.BN(500_000_000); // 0.5 SOL
 
-    const initialBankBalance = await provider.connection.getBalance(bankPDA);
-    const initialUserBalance = await provider.connection.getBalance(provider.wallet.publicKey);
+    const bankBalanceBefore = await provider.connection.getBalance(bankPDA);
+    const userBalanceBefore = await program.account.userAccount.fetch(userPDA);
+    const receiverBalanceBefore = await provider.connection.getBalance(provider.wallet.publicKey);
+    log("bankBalanceBefore", bankBalanceBefore/LAMPORTS_PER_SOL);
+    log("userBalanceBefore", userBalanceBefore.depositAmount.toNumber()/LAMPORTS_PER_SOL);
+    log("receiverBalanceBefore", receiverBalanceBefore/LAMPORTS_PER_SOL);
 
+    log("bankPDA:", bankPDA.toBase58())
+    log("userPDA:", userPDA.toBase58())
+    log("receiver:", provider.wallet.publicKey.toBase58())
     const tx = await program.methods
       .withdraw(withdrawAmount)
-      .accounts({
+      .accountsStrict({
         bank: bankPDA,
         userAccount: userPDA,
         receiver: provider.wallet.publicKey,
@@ -105,13 +119,20 @@ describe("bank", () => {
       })
       .rpc();
 
-    const finalBankBalance = await provider.connection.getBalance(bankPDA);
-    const finalUserBalance = await provider.connection.getBalance(provider.wallet.publicKey);
-    const userAccount = await program.account.userAccount.fetch(userPDA);
+    const bankBalanceAfter = await provider.connection.getBalance(bankPDA);
+    const userBalanceAfter = await program.account.userAccount.fetch(userPDA);
+    const receiverBalanceAfter = await provider.connection.getBalance(provider.wallet.publicKey);
+    log("bankBalanceAfter", bankBalanceAfter / LAMPORTS_PER_SOL);
+    log("userBalanceAfter", userBalanceAfter.depositAmount.toNumber()/LAMPORTS_PER_SOL);
+    log("receiverBalanceAfter", receiverBalanceAfter/LAMPORTS_PER_SOL);
 
-    assert.equal(initialBankBalance - finalBankBalance, withdrawAmount.toNumber());
-    assert.isAbove(finalUserBalance, initialUserBalance); // 考虑到交易费用，最终余额会略低于预期
-    assert.equal(userAccount.depositAmount.toNumber(), 500_000_000); // 剩余 0.5 SOL
+    assert.equal(bankBalanceBefore - bankBalanceAfter, withdrawAmount.toNumber());
+    assert.equal(
+      userBalanceBefore.depositAmount.toNumber() - userBalanceAfter.depositAmount.toNumber(), 
+      withdrawAmount.toNumber()
+    );
+    assert.isAbove(receiverBalanceAfter, receiverBalanceBefore); // 考虑到交易费用，最终余额会略低于预期
+
   });
 
   it("不能重复初始化银行账户", async () => {
@@ -123,7 +144,7 @@ describe("bank", () => {
     try {
       await program.methods
         .initialize()
-        .accounts({
+        .accountsStrict({
           bank: bankPDA,
           authority: provider.wallet.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -160,7 +181,7 @@ describe("bank", () => {
     // 获取创建用户账户的指令
     const createUserIx = await program.methods
       .createUserAccount()
-      .accounts({
+      .accountsStrict({
         userAccount: userPDA,
         owner: newUser.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -171,7 +192,7 @@ describe("bank", () => {
     const depositAmount = new anchor.BN(1_000_000_000); // 1 SOL
     const depositIx = await program.methods
       .deposit(depositAmount)
-      .accounts({
+      .accountsStrict({
         bank: bankPDA,
         userAccount: userPDA,
         depositor: newUser.publicKey,

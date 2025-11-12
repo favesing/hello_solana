@@ -1,7 +1,9 @@
-use anchor_lang::prelude::*;
-use anchor_lang::system_program;
+#![allow(deprecated)]
 
-declare_id!("3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m");
+use anchor_lang::prelude::*;
+use anchor_lang::system_program::{ transfer, Transfer };
+
+declare_id!("2N8wiE4EexdXScQysGMxeYbTkPooaXmu6DbhxNZ2YvSL");
 
 // 用户存入（deposit 指令）Bank 账户， Bank记录着所有Sol存款
 // 用户从银行账户提取资金（withdraw 指令） 
@@ -9,6 +11,8 @@ declare_id!("3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m");
 
 #[program]
 pub mod bank {
+    
+
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
@@ -25,17 +29,17 @@ pub mod bank {
 
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         // 转账 SOL 到银行账户
+        let transfer_to_bank = Transfer{
+            from: ctx.accounts.depositor.to_account_info(),
+            to: ctx.accounts.bank.to_account_info(),
+        };
         // CPI 调用系统程序
-        system_program::transfer(
-            CpiContext::new(
-                ctx.accounts.system_program.to_account_info(),
-                system_program::Transfer {
-                    from: ctx.accounts.depositor.to_account_info(),
-                    to: ctx.accounts.bank.to_account_info(),
-                },
-            ),
-            amount,
-        )?;
+        let cpi_context = CpiContext::new(
+            ctx.accounts.system_program.to_account_info(), 
+            transfer_to_bank,
+        );
+        
+        transfer(cpi_context, amount)?;
 
         // 更新用户存款记录
         ctx.accounts.user_account.deposit_amount = ctx.accounts.user_account.deposit_amount.checked_add(amount).unwrap();
@@ -56,7 +60,7 @@ pub mod bank {
             BankError::InsufficientBankFunds
         );
 
-        // 从银行账户转账 SOL 到接收者
+        // 手动从底层操作: 从银行账户转账 SOL 到接收者
         **ctx.accounts.bank.to_account_info().try_borrow_mut_lamports()? = ctx
             .accounts.bank
             .to_account_info()
@@ -69,6 +73,7 @@ pub mod bank {
             .lamports()
             .checked_add(amount)
             .unwrap();
+        
 
         // 更新用户存款记录
         ctx.accounts.user_account.deposit_amount = ctx.accounts.user_account.deposit_amount.checked_sub(amount).unwrap();

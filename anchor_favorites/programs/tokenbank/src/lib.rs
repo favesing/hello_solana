@@ -1,9 +1,11 @@
+#![allow(deprecated)]
+
 use anchor_lang::prelude::*;
 use anchor_spl::{
     token::{self, Mint, Token, TokenAccount, Transfer},
 };
 
-declare_id!("DScDzC7XWcpLGyq2CMu8sPLfqE4Z1MDUqQRvieEYHZBa");
+declare_id!("FYbkwegkQEoPsAdPqbbe4Dqhvbkc5eg82dTW5ioz1EA9");
 
 #[program]
 pub mod tokenbank {
@@ -104,8 +106,9 @@ pub struct CreateUserAccount<'info> {
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
-    #[account(mut,
-        seeds = [b"bank"],  // 添加这个约束
+    #[account(
+        mut,
+        seeds = [b"bank"],
         bump,
     )]
     pub bank: Account<'info, Bank>,
