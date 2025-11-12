@@ -3,9 +3,11 @@ import * as fs from "fs";
 import bs58 from "bs58";
 import bankIdl from "./idl/bank.json";
 import { getInstructionDiscriminatorFromIdl } from "./utils/discriminator";
+import { BorshCoder, Instruction } from "@coral-xyz/anchor";
+import { Bank } from "./types/bank";
 
 // Bank 合约程序 ID
-const BANK_PROGRAM_ID = new PublicKey("3A7uokk2LFPCMBJmCrn4ahErYicSpvktHEZnCmhVKY4m");
+const BANK_PROGRAM_ID = new PublicKey("2N8wiE4EexdXScQysGMxeYbTkPooaXmu6DbhxNZ2YvSL");
 const RPC_ENDPOINT = "http://localhost:8899";
 
 // 从 IDL 中获取指令的 discriminator
@@ -30,6 +32,37 @@ let totalTransfers = 0;
 let depositCount = 0;
 let withdrawCount = 0;
 let totalAmount = 0;
+
+/**
+ * 解码指令数据
+ *
+ * @param idl - IDL 对象
+ * @param instructionData - 指令数据 Buffer（包含 discriminator）
+ * @returns { instructionName: string, data: any } 或 null
+ */
+export function decodeInstruction(
+  idl: any,
+  instructionData: Buffer
+): { instructionName: string; data: any } | null {
+  try {
+    const coder = new BorshCoder(idl as Bank);
+
+    // decode 方法会返回指令名称和解码后的数据
+    const decoded = coder.instruction.decode(instructionData);
+
+    if (!decoded) {
+      return null;
+    }
+
+    return {
+      instructionName: decoded.name,
+      data: decoded.data,
+    };
+  } catch (error) {
+    console.error("解码指令失败:", error);
+    return null;
+  }
+}
 
 async function processSignature(
   connection: Connection,
@@ -61,6 +94,13 @@ async function processSignature(
         // 这是未解析的指令（自定义程序）
         if ("data" in instruction) {
           const instructionData = Buffer.from(bs58.decode(instruction.data));
+          const decoded = decodeInstruction(bankIdl, instructionData);
+          if(decoded){
+            const { instructionName, data } = decoded;
+            const { amount } = data;
+            console.log(`  📝instruction name: ${instructionName}`);
+            console.log(`  📝instruction data: ${amount / 1e9} SOL`);
+          }
 
           // 提取前 8 字节作为 discriminator
           if (instructionData.length < 8) continue;
@@ -75,7 +115,7 @@ async function processSignature(
           } else {
             continue;
           }
-
+          
           console.log(`\n✅ 发现 Bank ${instructionType.toUpperCase()} 指令！`);
           console.log(`  指令索引: ${i}`);
           console.log(`  账户数量: ${instruction.accounts.length}`);
@@ -85,7 +125,6 @@ async function processSignature(
 
           for (const inner of innerInstructions) {
             if (inner.index !== i) continue; // 只处理当前主指令的内部指令
-
             console.log(`  内部指令数量: ${inner.instructions.length}`);
 
             for (const innerIx of inner.instructions) {
@@ -138,7 +177,7 @@ async function processSignature(
 
   return transfers;
 }
-
+// 持续扫描交易签名(ConfirmedSignatureInfo)的 instructions 实时监控转账
 async function continuousScan(): Promise<void> {
   const connection = new Connection(RPC_ENDPOINT, "confirmed");
   const allTransfers: TransferRecord[] = [];
@@ -189,9 +228,7 @@ async function continuousScan(): Promise<void> {
 
       if (signatures.length > 0) {
         // 过滤出新的交易
-        const newSignatures = signatures.filter(
-          sig => !processedSignatures.has(sig.signature)
-        );
+        const newSignatures = signatures.filter(sig => !processedSignatures.has(sig.signature));
 
         if (newSignatures.length > 0) {
           console.log(`\n检测到 ${newSignatures.length} 个新交易`);
@@ -234,7 +271,7 @@ async function continuousScan(): Promise<void> {
 
   // 保存结果
   if (allTransfers.length > 0) {
-    const outputFile = `bank_transfers_v2_${Date.now()}.json`;
+    const outputFile = `log/bank_transfers_v2_${Date.now()}.json`;
     fs.writeFileSync(outputFile, JSON.stringify(allTransfers, null, 2));
     console.log(`\n✅ 结果已保存到: ${outputFile}`);
   }

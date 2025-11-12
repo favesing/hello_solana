@@ -6,7 +6,7 @@
     "dev": "ts-node src/index.ts",
     "listen_favorites": "ts-node src/listen_favorites.ts",
     "measure_cu": "ts-node src/measure_cu.ts",
-    "scan_bank": "ts-node src/scan_bank_v2.ts",
+    "scan_bank": "ts-node src/scan_bank.ts",
     "get_all_favorites_pdas": "ts-node src/get_all_favorites_pdas.ts",
     "scan_favorites_with_coder": "ts-node src/scan_favorites_with_coder.ts",
     "scan_favorites": "ts-node src/scan_favorites.ts",
